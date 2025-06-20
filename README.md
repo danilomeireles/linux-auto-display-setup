@@ -47,8 +47,8 @@ Create the directory and download the script:
 
 ```bash
 cd /home/yourusername
-mkdir -p ~/.screenlayout
-cd ~/.screenlayout
+mkdir -p .screenlayout
+cd .screenlayout
 wget https://raw.githubusercontent.com/yourusername/linux-auto-display-setup/main/display-setup.sh
 ```
 
