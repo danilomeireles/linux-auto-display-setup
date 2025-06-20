@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Advanced Display Setup Script
+# Linux Auto Display Setup
 # Supports all combinations of laptop + external monitors
 # Handles laptop lid closed/open scenarios automatically
-# Author: Danilo Meireles
+# More Information: https://github.com/danilomeireles/linux-auto-display-setup
 
 # =============================================================================
 # CONFIGURATION
