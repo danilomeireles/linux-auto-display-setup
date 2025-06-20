@@ -46,6 +46,7 @@ The script handles seven different display configurations:
 Create the directory and download the script:
 
 ```bash
+cd /home/yourusername
 mkdir -p ~/.screenlayout
 cd ~/.screenlayout
 wget https://raw.githubusercontent.com/yourusername/linux-auto-display-setup/main/display-setup.sh
@@ -54,43 +55,13 @@ wget https://raw.githubusercontent.com/yourusername/linux-auto-display-setup/mai
 Make it executable:
 
 ```bash
-chmod +x ~/.screenlayout/display-setup.sh
+chmod +x display-setup.sh
 ```
 
-Test the script:
+Run the script:
 
 ```bash
 ./display-setup.sh
-```
-
-## Manual Usage
-
-### Making the Script Executable
-
-Before running the script for the first time (only needed once):
-
-```bash
-chmod +x ~/.screenlayout/display-setup.sh
-```
-
-### Running the Script
-
-Execute the script manually:
-
-```bash
-~/.screenlayout/display-setup.sh
-```
-
-Or from the script directory:
-
-```bash
-cd ~/.screenlayout && ./display-setup.sh
-```
-
-For debugging, run with bash:
-
-```bash
-bash ~/.screenlayout/display-setup.sh
 ```
 
 ### Usage Notes for Manual Execution
@@ -98,7 +69,6 @@ bash ~/.screenlayout/display-setup.sh
 - The script will detect your current display configuration automatically
 - Check the log file (`~/.screenlayout/display-setup.log`) for detailed execution information
 - If you encounter permission issues, ensure the script is executable with `chmod +x`
-- The script works best when run while logged into your desktop environment
 
 ## Automatic Startup
 
