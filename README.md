@@ -63,26 +63,22 @@ Test the script:
 ./display-setup.sh
 ```
 
-## Automatic Startup
-
-To run the script automatically at login:
-
-1. Open "Startup Applications Preferences" (search for it in Activities)
-2. Click the "Add" button to create a new startup item
-3. Fill in the following details:
-   - Name: Display Setup Script
-   - Command: `sleep 10 && /home/yourusername/.screenlayout/display-setup.sh`
-   - Comment: Automatic display configuration at startup
-4. Click "Add" to save the configuration
-
-Replace `yourusername` with your actual username. The 10-second delay ensures the display system is fully initialized before the script runs.
-
 ## Manual Usage
 
-Run the script manually:
+### Making the Script Executable
+
+Before running the script for the first time (only needed once):
 
 ```bash
-/home/yourusername/.screenlayout/display-setup.sh
+chmod +x ~/.screenlayout/display-setup.sh
+```
+
+### Running the Script
+
+Execute the script manually:
+
+```bash
+~/.screenlayout/display-setup.sh
 ```
 
 Or from the script directory:
@@ -94,8 +90,37 @@ cd ~/.screenlayout && ./display-setup.sh
 For debugging, run with bash:
 
 ```bash
-bash /home/yourusername/.screenlayout/display-setup.sh
+bash ~/.screenlayout/display-setup.sh
 ```
+
+### Usage Notes for Manual Execution
+
+- The script will detect your current display configuration automatically
+- Check the log file (`~/.screenlayout/display-setup.log`) for detailed execution information
+- If you encounter permission issues, ensure the script is executable with `chmod +x`
+- The script works best when run while logged into your desktop environment
+
+## Automatic Startup
+
+To run the script automatically at login:
+
+1. Open "Startup Applications Preferences" (search for it in Activities)
+2. Click the "Add" button to create a new startup item
+3. Fill in the following details:
+   - **Name**: Display Setup Script
+   - **Command**: `sleep 10 && /home/yourusername/.screenlayout/display-setup.sh`
+   - **Comment**: Automatic display configuration at startup
+4. Click "Add" to save the configuration
+
+Replace `yourusername` with your actual username. The 10-second delay ensures the display system is fully initialized before the script runs.
+
+### Startup Configuration Notes
+
+- The 10-second delay ensures the display system is fully initialized
+- Adjust the sleep duration if you experience timing issues (try 15 seconds if needed)
+- To disable: Open "Startup Applications" and uncheck or remove the entry
+- Log files are created in the same directory as the script
+- If the script doesn't run at startup, check the log file for error messages
 
 ## Configuration
 
@@ -133,6 +158,11 @@ tail -f ~/.screenlayout/display-setup.log
 **Wrong display configuration**: Check logs for detection issues and verify monitor connections are secure.
 
 **Lid detection not working**: The script uses best-effort lid detection. Some systems may not support all detection methods, but monitor positioning should still work correctly.
+
+**Permission issues**: Ensure the script is executable:
+```bash
+chmod +x ~/.screenlayout/display-setup.sh
+```
 
 For verbose debugging output:
 
