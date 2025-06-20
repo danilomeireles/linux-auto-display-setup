@@ -49,7 +49,7 @@ Create the directory and download the script:
 cd /home/yourusername
 mkdir -p .screenlayout
 cd .screenlayout
-wget https://raw.githubusercontent.com/yourusername/linux-auto-display-setup/main/display-setup.sh
+wget https://raw.githubusercontent.com/danilomeireles/linux-auto-display-setup/main/display-setup.sh
 ```
 
 Make it executable:
