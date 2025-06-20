@@ -4,47 +4,6 @@
 # Supports all combinations of laptop + external monitors
 # Handles laptop lid closed/open scenarios automatically
 # Author: Danilo Meireles
-#
-# MANUAL EXECUTION INSTRUCTIONS:
-# ==============================
-# To run this script manually:
-#
-# 1. Make the script executable (only needed once):
-#    chmod +x /home/<yourusername>/.screenlayout/display-setup.sh
-#
-# 2. Run the script manually:
-#    /home/<yourusername>/.screenlayout/display-setup.sh
-#    or
-#    cd ~/.screenlayout && ./display-setup.sh
-#
-# 3. For testing or debugging, you can also run:
-#    bash /home/<yourusername>/.screenlayout/display-setup.sh
-#
-# Notes for manual execution:
-# - The script will detect your current display configuration automatically
-# - Check the log file (display-setup.log) for detailed execution info
-# - If you encounter permission issues, ensure the script is executable
-# - The script works best when run while logged into your desktop environment
-#
-# STARTUP CONFIGURATION INSTRUCTIONS:
-# ===================================
-# To configure this script to run automatically at login, follow these steps:
-#
-# 1. Open "Startup Applications Preferences" (search for it in Activities)
-# 2. Click the "Add" button to create a new startup item
-# 3. Fill in the following details:
-#    • Name: Display Setup Script
-#    • Command: sleep 10 && /home/<yourusername>/.screenlayout/display-setup.sh
-#    • Comment: Automatic display configuration at startup
-# 4. Click "Add" to save the configuration
-# 5. The script will now run automatically 10 seconds after login
-#
-# Notes for startup configuration:
-# - The 10-second delay ensures the display system is fully initialized
-# - Adjust the sleep duration if you experience timing issues
-# - To disable: Open "Startup Applications" and uncheck or remove the entry
-# - Log files are created in the same directory as this script
-# - If the script doesn't run, check the log file for error messages
 
 # =============================================================================
 # CONFIGURATION
