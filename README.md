@@ -60,7 +60,7 @@ chmod +x ~/.screenlayout/display-setup.sh
 Test the script:
 
 ```bash
-~/.screenlayout/display-setup.sh
+./display-setup.sh
 ```
 
 ## Automatic Startup
