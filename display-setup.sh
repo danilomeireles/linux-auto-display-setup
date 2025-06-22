@@ -21,7 +21,7 @@ log_message() {
     local message="$2"
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
-    echo "[$level] $message"  # Also print to console for debugging
+    echo "[$level] $message" >&2  # Send to stderr to avoid interfering with function returns
 }
 
 log_info() {
@@ -76,11 +76,23 @@ get_best_resolution() {
 # Get resolution width for positioning calculations
 get_resolution_width() {
     local resolution="$1"
+    local width
+    
     if [ "$resolution" = "auto" ]; then
-        echo "1920"  # Default width assumption
+        width="1920"  # Default width assumption
     else
-        echo "${resolution%x*}"  # Extract width from resolution string
+        # Extract width from resolution string and ensure it's numeric
+        width="${resolution%x*}"  # Extract everything before 'x'
+        
+        # Validate that width is numeric
+        if ! [[ "$width" =~ ^[0-9]+$ ]]; then
+            log_error "Invalid width extracted from resolution '$resolution': '$width'"
+            width="1920"  # Fallback to default
+        fi
     fi
+    
+    log_debug "Resolution '$resolution' -> width: $width"
+    echo "$width"
 }
 
 # Check if laptop lid is closed (best effort detection)
@@ -113,14 +125,29 @@ is_laptop_lid_closed() {
 
 # Get display information
 get_display_info() {
-    laptop_display=$(xrandr --query | grep "^eDP-1 connected" | awk '{print $1}')
-    external_displays=$(xrandr --query | grep " connected" | grep -v "^eDP-1" | awk '{print $1}')
+    # Find laptop display - try multiple common names
+    laptop_display=""
+    for display_name in "eDP-1" "LVDS-1" "LVDS1" "eDP1"; do
+        if xrandr --query | grep -q "^$display_name connected"; then
+            laptop_display="$display_name"
+            break
+        fi
+    done
+    
+    # Find external displays - exclude laptop display
+    external_displays=$(xrandr --query | grep " connected" | grep -v "^$laptop_display " | awk '{print $1}')
     external_count=$(echo "$external_displays" | grep -v '^$' | wc -l)
     
     log_info "Display Detection Results:"
     log_info "  Laptop Display: ${laptop_display:-'Not Found'}"
     log_info "  External Displays: ${external_displays:-'None'}"
     log_info "  External Display Count: $external_count"
+    
+    # Debug: Show all connected displays
+    log_debug "All connected displays:"
+    xrandr --query | grep " connected" | while read line; do
+        log_debug "    $line"
+    done
     
     # Check if laptop display is available
     laptop_available=false
@@ -183,7 +210,7 @@ execute_xrandr() {
     local cmd="$1"
     log_info "Executing xrandr command: $cmd"
     
-    if eval "$cmd" 2>&1 | tee -a "$LOG_FILE"; then
+    if eval "$cmd" 2>&1 | tee -a "$LOG_FILE" >&2; then
         log_info "xrandr command executed successfully"
         return 0
     else
@@ -232,6 +259,8 @@ configure_displays() {
                 local resolution=$(get_best_resolution "$monitor")
                 local width=$(get_resolution_width "$resolution")
                 
+                log_debug "Configuring monitor $monitor at position $current_x_pos with resolution $resolution (width: $width)"
+                
                 if [ $i -eq 0 ]; then
                     # First external monitor is primary
                     if [ "$resolution" = "auto" ]; then
@@ -246,6 +275,7 @@ configure_displays() {
                         xrandr_cmd="$xrandr_cmd --output $monitor --mode $resolution --pos ${current_x_pos}x0 --rotate normal --scale 1x1"
                     fi
                 fi
+                # Ensure width is treated as a number for arithmetic
                 current_x_pos=$((current_x_pos + width))
             done
             
@@ -260,10 +290,16 @@ configure_displays() {
             local ext_resolution=$(get_best_resolution "$ext_display")
             
             if [ "$ext_resolution" = "auto" ]; then
-                xrandr_cmd="xrandr --output $ext_display --primary --auto --pos 0x0 --rotate normal --scale 1x1 --output $laptop_display --off"
+                xrandr_cmd="xrandr --output $ext_display --primary --auto --pos 0x0 --rotate normal --scale 1x1"
             else
-                xrandr_cmd="xrandr --output $ext_display --primary --mode $ext_resolution --pos 0x0 --rotate normal --scale 1x1 --output $laptop_display --off"
+                xrandr_cmd="xrandr --output $ext_display --primary --mode $ext_resolution --pos 0x0 --rotate normal --scale 1x1"
             fi
+            
+            # Turn off laptop display if it exists
+            if [ -n "$laptop_display" ]; then
+                xrandr_cmd="$xrandr_cmd --output $laptop_display --off"
+            fi
+            
             notification_msg="Single external monitor (laptop OFF)"
             ;;
             
@@ -271,13 +307,20 @@ configure_displays() {
             local display_array=($external_displays)
             local current_x_pos=0
             
-            xrandr_cmd="xrandr --output $laptop_display --off"
+            xrandr_cmd="xrandr"
+            
+            # Turn off laptop display first if it exists
+            if [ -n "$laptop_display" ]; then
+                xrandr_cmd="$xrandr_cmd --output $laptop_display --off"
+            fi
             
             # Configure external monitors
             for i in "${!display_array[@]}"; do
                 local monitor="${display_array[$i]}"
                 local resolution=$(get_best_resolution "$monitor")
                 local width=$(get_resolution_width "$resolution")
+                
+                log_debug "Configuring monitor $monitor at position $current_x_pos with resolution $resolution (width: $width)"
                 
                 if [ $i -eq 0 ]; then
                     # First monitor is primary
@@ -293,6 +336,7 @@ configure_displays() {
                         xrandr_cmd="$xrandr_cmd --output $monitor --mode $resolution --pos ${current_x_pos}x0 --rotate normal --scale 1x1"
                     fi
                 fi
+                # Ensure width is treated as a number for arithmetic
                 current_x_pos=$((current_x_pos + width))
             done
             
@@ -322,11 +366,15 @@ configure_displays() {
     # Execute the configuration
     if execute_xrandr "$xrandr_cmd"; then
         log_info "Display configuration successful: $notification_msg"
-        notify-send "Display Setup" "$notification_msg" -i video-display
+        if command -v notify-send >/dev/null 2>&1; then
+            notify-send "Display Setup" "$notification_msg" -i video-display 2>/dev/null || true
+        fi
         return 0
     else
         log_error "Display configuration failed"
-        notify-send "Display Setup" "Configuration failed - check logs" -i dialog-error
+        if command -v notify-send >/dev/null 2>&1; then
+            notify-send "Display Setup" "Configuration failed - check logs" -i dialog-error 2>/dev/null || true
+        fi
         return 1
     fi
 }
